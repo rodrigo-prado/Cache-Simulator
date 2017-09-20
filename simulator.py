@@ -2,6 +2,7 @@
 
 import sys
 import math
+import random
 
 class FIFO:
 
@@ -17,6 +18,7 @@ class FIFO:
 		for i in range(self.size):
 			if obj == self.cache[i]:
 				self.cacheHit += 1
+				print("cache =",self.cache)	
 				return False # Cache Hit
 		return True # Cache Miss
 
@@ -25,7 +27,7 @@ class FIFO:
 		self.tail = (self.tail + 1) % len(self.cache)
 		if self.size < len(self.cache):
 			self.size += 1
-		print(self.cache)		
+		print("cache =",self.cache)	
 
 	def printLog(self):
 		print("Total Requests: " + str(self.count) + ", Total Cache Hit: " + str(self.cacheHit) + ", Total Cache Miss: " + str(self.count - self.cacheHit) + \
@@ -123,11 +125,28 @@ class Random:
 	def __init__(self, cacheSize):
 		self.size = 0
 		self.cache = [None] * cacheSize
+		self.count = 0
+		self.cacheHit = 0
 
 	def search(self, obj):
-		pass
-	def update(self):
-		pass
+		self.count += 1
+		for i in range(self.size):
+			if obj == self.cache[i]:
+				self.cacheHit += 1
+				print("cache =",self.cache )
+				return False # Cache Hit
+		return True # Cache Miss
+
+	def update(self, obj):
+
+		if self.size < len(self.cache): # while the cache is not full, add the new item at the end
+			self.cache[self.size] = obj
+			print("cache =",self.cache )
+			self.size += 1
+		else:
+			rVal = random.randint(0, len(self.cache)-1 )
+			self.cache[rVal] = obj
+			print("cache =",self.cache )
 
 	def printLog(self):
 		print("Total Requests: " + str(self.count) + ", Total Cache Hit: " + str(self.cacheHit) + ", Total Cache Miss: " + str(self.count - self.cacheHit) + \
