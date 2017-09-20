@@ -1,6 +1,7 @@
 # coding: iso-8859-1
 
 import sys
+import math
 
 class FIFO:
 
@@ -16,11 +17,10 @@ class FIFO:
 		for i in range(self.size):
 			if obj == self.cache[i]:
 				self.cacheHit += 1
-				#print(obj,"Cache hit")
-				return False
-		return True
+				return False # Cache Hit
+		return True # Cache Miss
 
-	def update(self, obj):
+	def update(self, obj): # Add or replace the request content
 		self.cache[self.tail] = obj;
 		self.tail = (self.tail + 1) % len(self.cache)
 		if self.size < len(self.cache):
@@ -29,29 +29,94 @@ class FIFO:
 
 	def printLog(self):
 		print("Total Requests: " + str(self.count) + ", Total Cache Hit: " + str(self.cacheHit) + ", Total Cache Miss: " + str(self.count - self.cacheHit) + \
-				", Cache Hit Ratio: " + str(self.cacheHit/self.count) + ", Cache Miss Ratio: " + str((self.count - self.cacheHit)/self.count) )
+				", Cache Hit Ratio: " + str(round(self.cacheHit/self.count,2)) + ", Cache Miss Ratio: " + str( round( (self.count - self.cacheHit)/self.count, 2 ) ) )
 
 class LRU:
 
 	def __init__(self, cacheSize):
 		self.size = 0
 		self.cache = [None] * cacheSize
+		self.age = [0] * cacheSize
+		self.count = 0
+		self.cacheHit = 0
 
 	def search(self, obj):
-		pass
-	def update(self):
-		pass
+		self.count += 1
+		for i in range(self.size):
+			if obj == self.cache[i]:
+				self.cacheHit += 1
+				self.age[i] = self.count
+				
+				print("cache =",self.cache, ", age =", self.age )
+				
+				return False
+		return True
+
+	def update(self, obj):
+
+		if self.size < len(self.cache): # while the cache is not full, add the new item at the end
+			self.cache[self.size] = obj
+			self.age[self.size] = self.count
+			
+			print("cache =",self.cache, ", age =", self.age )
+			self.size += 1
+		else: # if the cache is full, replace items through the LRU policy 
+			ageMin, ageMinPos = self.age[0], 0 
+			for i in range(1, self.size):
+				if self.age[i] < ageMin:
+					ageMin = self.age[i]
+					ageMinPos = i
+
+			self.cache[ageMinPos] = obj
+			self.age[ageMinPos] = self.count
+		
+			print("cache =",self.cache, ", age =", self.age )
+			
+	def printLog(self):
+		print("Total Requests: " + str(self.count) + ", Total Cache Hit: " + str(self.cacheHit) + ", Total Cache Miss: " + str(self.count - self.cacheHit) + \
+				", Cache Hit Ratio: " + str(round(self.cacheHit/self.count,2)) + ", Cache Miss Ratio: " + str( round( (self.count - self.cacheHit)/self.count, 2 ) ) )
 
 class LFU:
 
 	def __init__(self, cacheSize):
 		self.size = 0
 		self.cache = [None] * cacheSize
+		self.access = [0] * cacheSize
+		self.count = 0
+		self.cacheHit = 0
 
 	def search(self, obj):
-		pass
-	def update(self):
-		pass
+		self.count += 1
+		for i in range(self.size):
+			if obj == self.cache[i]:
+				self.cacheHit += 1
+				self.access[i] += 1
+				print("cache =",self.cache, ", access =", self.access )
+				return False
+		return True
+
+	def update(self, obj):
+
+		if self.size < len(self.cache): # while the cache is not full, add the new item at the end
+			self.cache[self.size] = obj
+			self.access[self.size] = 1
+			print("cache =",self.cache, ", access =", self.access )
+			self.size += 1
+		else: # if the cache is full, replace items through the LFU policy 
+			accessMin, accessMinPos = self.access[0], 0 
+			for i in range(1, self.size):
+				if self.access[i] < accessMin:
+					accessMin = self.access[i]
+					accessMinPos = i
+
+			self.cache[accessMinPos] = obj
+			self.access[accessMinPos] = 1
+
+			print("cache =",self.cache, ", access =", self.access )
+
+	def printLog(self):
+		print("Total Requests: " + str(self.count) + ", Total Cache Hit: " + str(self.cacheHit) + ", Total Cache Miss: " + str(self.count - self.cacheHit) + \
+				", Cache Hit Ratio: " + str(round(self.cacheHit/self.count,2)) + ", Cache Miss Ratio: " + str( round( (self.count - self.cacheHit)/self.count, 2 ) ) )
 
 class Random:
 
@@ -63,6 +128,10 @@ class Random:
 		pass
 	def update(self):
 		pass
+
+	def printLog(self):
+		print("Total Requests: " + str(self.count) + ", Total Cache Hit: " + str(self.cacheHit) + ", Total Cache Miss: " + str(self.count - self.cacheHit) + \
+				", Cache Hit Ratio: " + str(round(self.cacheHit/self.count,2)) + ", Cache Miss Ratio: " + str( round( (self.count - self.cacheHit)/self.count, 2 ) ) )
 
 def main(argv):
 
